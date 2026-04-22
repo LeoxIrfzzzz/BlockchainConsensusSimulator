@@ -153,6 +153,14 @@
                     </ul>
                 </div>
             </div>
+
+            <div class="security-note" style="margin-top: 30px; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 20px; text-align: left; box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);">
+                <h4 style="color: #3b82f6; margin-bottom: 10px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">🛡️ Security Test: The "Zero Stake" Error</h4>
+                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+                    If you watch the terminal log at the very end of a simulation, you will notice a red error stating: <strong style="color: #ef4444;">[PoS] ERROR: Total stake is zero or negative.</strong><br><br>
+                    This is an <strong>intentional security demonstration</strong>! To prove the network cannot be spammed by fake participants, the C++ engine deliberately spawns two "Rogue Nodes" with 0 stake and asks them to forge a block. The Proof of Stake algorithm successfully detects them, rejects the forgery, and throws this exact error—proving the network is entirely secure against validators who have no real financial collateral.
+                </p>
+            </div>
         </div>
 
         <!-- EDUCATIONAL VISUALIZER FLOWCHART -->
