@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consensus Engine | PoW vs PoS</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="background-grid"></div>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <main class="container">
+        <header>
+            <div class="title-wrapper">
+                <h1>Consensus Engine</h1>
+                <span class="badge">C++ Core Active</span>
+            </div>
+            <p>Real-time execution of Proof of Work vs Proof of Stake mechanisms.</p>
+            <p style="font-size: 0.85rem; color: var(--accent-pos); margin-top: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">Simulator made by Mohammed Irfaan</p>
+        </header>
+
+        <div class="settings-panel">
+            <h3>Simulation Parameters</h3>
+            <div class="settings-grid">
+                <div class="setting-group">
+                    <label for="pow-diff">PoW Difficulty (Zeros)</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="range" id="pow-diff" min="3" max="6" value="5" oninput="document.getElementById('diff-val').innerText = this.value">
+                        <span class="range-val" id="diff-val">5</span>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label for="num-blocks">Num Blocks</label>
+                    <input type="number" id="num-blocks" value="1" min="1" max="10">
+                </div>
+                <div class="setting-group" style="grid-column: span 2;">
+                    <label for="custom-data">Custom Tx Payload</label>
+                    <input type="text" id="custom-data" value="Network initialization payload" style="background:#09090b; border:1px solid #334155; color:#fff; padding:10px 15px; border-radius:8px; font-family:'JetBrains Mono', monospace; width:100%; outline:none;">
+                </div>
+                <div class="setting-group">
+                    <label for="alpha-stake">Alpha Node Stake</label>
+                    <input type="number" id="alpha-stake" value="500" min="0">
+                </div>
+                <div class="setting-group">
+                    <label for="beta-stake">Beta Node Stake</label>
+                    <input type="number" id="beta-stake" value="300" min="0">
+                </div>
+                <div class="setting-group">
+                    <label for="gamma-stake">Gamma Node Stake</label>
+                    <input type="number" id="gamma-stake" value="200" min="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button id="run-btn" class="btn-primary">
+                <span class="btn-text">INITIALIZE SIMULATION</span>
+                <div class="btn-glow"></div>
+            </button>
+        </div>
+
+        <div class="dashboard">
+            <div class="card pow-card">
+                <div class="card-header">
+                    <h2>Proof of Work</h2>
+                    <div class="status-indicator"></div>
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <span class="label">Time Taken</span>
+                        <span class="value" id="pow-time">-- ms</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Energy Reality</span>
+                        <span class="value" id="pow-energy">-- Joules</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card pos-card">
+                <div class="card-header">
+                    <h2>Proof of Stake</h2>
+                    <div class="status-indicator"></div>
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <span class="label">Time Taken</span>
+                        <span class="value" id="pos-time">-- ms</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Selected Forger</span>
+                        <span class="value" id="pos-forger">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIVE ANALYTICS CHARTS -->
+        <div class="analytics-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px;">
+            <div class="chart-box" style="background: var(--bg-card); padding: 20px; border-radius: 15px; border: 1px solid var(--border-color); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);">
+                <h3 style="text-align:center; color:var(--text-muted); margin-bottom:15px; font-size:1rem; text-transform:uppercase; letter-spacing:1px;">Energy Consumption (Joules)</h3>
+                <canvas id="energyChart"></canvas>
+            </div>
+            <div class="chart-box" style="background: var(--bg-card); padding: 20px; border-radius: 15px; border: 1px solid var(--border-color); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);">
+                <h3 style="text-align:center; color:var(--text-muted); margin-bottom:15px; font-size:1rem; text-transform:uppercase; letter-spacing:1px;">Cumulative Time Taken (ms)</h3>
+                <canvas id="timeChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- NETWORK TOPOLOGY MAP -->
+        <div class="node-map-container" style="background: var(--bg-card); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color); margin-bottom: 40px; text-align: center; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);">
+            <h3 style="color:var(--text-muted); margin-bottom: 25px; font-size: 1rem; text-transform:uppercase; letter-spacing:1px;">Network Node Topology (PoS)</h3>
+            <div style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+                <div id="node-Alpha_Node" class="pos-node" style="padding: 15px 30px; border: 2px solid #334155; border-radius: 50px; transition: all 0.4s; font-weight:bold; color:var(--text-muted); background: rgba(0,0,0,0.4);">Alpha Node</div>
+                <div id="node-Beta_Node" class="pos-node" style="padding: 15px 30px; border: 2px solid #334155; border-radius: 50px; transition: all 0.4s; font-weight:bold; color:var(--text-muted); background: rgba(0,0,0,0.4);">Beta Node</div>
+                <div id="node-Gamma_Node" class="pos-node" style="padding: 15px 30px; border: 2px solid #334155; border-radius: 50px; transition: all 0.4s; font-weight:bold; color:var(--text-muted); background: rgba(0,0,0,0.4);">Gamma Node</div>
+            </div>
+        </div>
+
+        <!-- BLOCKCHAIN GLOSSARY -->
+        <div class="educational-guide">
+            <h3>Blockchain Glossary</h3>
+            <div class="guide-grid">
+                <div class="guide-card">
+                    <h4>Core Terminology</h4>
+                    <ul>
+                        <li><strong>Transaction:</strong> A request to record data or transfer value on the network.</li>
+                        <li><strong>Block:</strong> A permanent digital container of verified transactions.</li>
+                        <li><strong>Node:</strong> A computer on the network that maintains the ledger.</li>
+                        <li><strong>Hash Value:</strong> A unique cryptographic fingerprint of the block's data.</li>
+                    </ul>
+                </div>
+                
+                <div class="guide-card pow-guide">
+                    <h4>Proof of Work (Mining)</h4>
+                    <ul>
+                        <li><strong>Nonce:</strong> A random number miners guess to alter the block's hash.</li>
+                        <li><strong>Brute Forcing:</strong> Wasting massive CPU energy to guess millions of nonces until the hash meets the target difficulty.</li>
+                        <li><strong>Validation & Adding:</strong> The network mathematically verifies the winner's hash, and permanently adds the block.</li>
+                    </ul>
+                </div>
+
+                <div class="guide-card pos-guide">
+                    <h4>Proof of Stake (Forging)</h4>
+                    <ul>
+                        <li><strong>Validator:</strong> A node that locks up collateral (Stake) to participate.</li>
+                        <li><strong>Weighted Draw:</strong> A low-energy lottery. The more you stake, the higher your chance to be chosen.</li>
+                        <li><strong>Forging & Adding:</strong> The chosen validator cryptographically signs the block. No energy-intensive mining required.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- EDUCATIONAL VISUALIZER FLOWCHART -->
+        <div class="visualizer-container">
+            <!-- PoW Pipeline -->
+            <div class="pipeline-box" id="pow-pipeline">
+                <h3>Proof of Work: Workflow</h3>
+                <div class="flow-container">
+                    <div class="flow-step pow-step" id="pow-step-1">
+                        <div class="step-icon">📦</div>
+                        <div class="step-text">1. Receive Tx</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step pow-step" id="pow-step-2">
+                        <div class="step-icon">🎯</div>
+                        <div class="step-text">2. Set Target</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step pow-step" id="pow-step-3">
+                        <div class="step-icon">⚙️</div>
+                        <div class="step-text">3. Brute Force Nonce</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step pow-step" id="pow-step-4">
+                        <div class="step-icon">✅</div>
+                        <div class="step-text">4. Validate Hash</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step pow-step" id="pow-step-5">
+                        <div class="step-icon">🔗</div>
+                        <div class="step-text">5. Block Added</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PoS Pipeline -->
+            <div class="pipeline-box" id="pos-pipeline">
+                <h3>Proof of Stake: Workflow</h3>
+                <div class="flow-container">
+                    <div class="flow-step pos-step" id="pos-step-1">
+                        <div class="step-icon">📦</div>
+                        <div class="step-text">1. Receive Tx</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step pos-step" id="pos-step-2">
+                        <div class="step-icon">💰</div>
+                        <div class="step-text">2. Check Stakes</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step pos-step" id="pos-step-3">
+                        <div class="step-icon">🎲</div>
+                        <div class="step-text">3. Weighted Draw</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step pos-step" id="pos-step-4">
+                        <div class="step-icon">✍️</div>
+                        <div class="step-text">4. Forger Signs</div>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="flow-step pos-step" id="pos-step-5">
+                        <div class="step-icon">🔗</div>
+                        <div class="step-text">5. Block Added</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIVE COMMENTARY SECTION -->
+        <div class="commentary-container">
+            <div class="commentary-header">
+                <span class="live-dot"></span> LIVE COMMENTARY
+            </div>
+            <div class="commentary-text" id="live-commentary">
+                System idle. Waiting for simulation to begin...
+            </div>
+        </div>
+
+        <div class="terminal-container">
+            <div class="terminal-header">
+                <div class="dots">
+                    <span></span><span></span><span></span>
+                </div>
+                <div class="terminal-title">system_output.log</div>
+            </div>
+            <div class="terminal-body" id="terminal">
+                <div class="log-line system">Ready to initialize C++ consensus engine...</div>
+            </div>
+        </div>
+
+        <!-- BLOCK EXPLORER -->
+        <div class="explorer-container">
+            <h3>Immutable Ledger (Block Explorer)</h3>
+            
+            <div class="tamper-explanation" style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 25px; text-align: center; box-shadow: 0 0 20px rgba(239, 68, 68, 0.1);">
+                <h4 style="color: #ef4444; margin-bottom: 10px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">🚨 The Avalanche Effect (Tamper Testing)</h4>
+                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; max-width: 800px; margin: 0 auto;">
+                    <strong>Try it yourself:</strong> Once the blocks are generated, click inside the <strong>Data</strong> field of any block below and change a letter. 
+                    You will instantly see its hash recompute and turn <span style="color:#ef4444; font-weight:bold;">Red</span>, proving the data was tampered with. Because each block relies on the previous block's hash, <strong>every single block after it will also become invalid!</strong> This is how the blockchain remains immutable.
+                </p>
+            </div>
+
+            <div class="explorer-grid" id="block-explorer">
+                <div class="block-card empty-state">Run simulation to view generated blocks...</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

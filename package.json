@@ -1,0 +1,12 @@
+{
+  "name": "blockchain-simulation-ui",
+  "version": "1.0.0",
+  "description": "Web UI for C++ Blockchain Simulation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

@@ -1,0 +1,79 @@
+=========================================================
+      BLOCKCHAIN CONSENSUS SIMULATOR: ARCHITECTURE
+            Made by Mohammed Irfaan
+=========================================================
+
+This document explains the entire architecture of the Consensus Engine application from top to bottom, including the programming languages, specific files, components, and mathematical algorithms used to make it work.
+
+---------------------------------------------------------
+1. OVERVIEW & TECH STACK
+---------------------------------------------------------
+The application is a full-stack educational simulator built to visually demonstrate how blockchains reach consensus (agreement) on new data blocks. 
+
+The tech stack is divided into two parts:
+1. BACKEND (The Brains): C++ and Node.js
+2. FRONTEND (The Visuals): Vanilla JavaScript (ES6), HTML5, and CSS3.
+
+---------------------------------------------------------
+2. THE COMPONENTS (File by File Breakdown)
+---------------------------------------------------------
+
+A. THE CRYPTOGRAPHIC CORE
+File: sha256.h / sha256.hpp
+- Language: C++
+- Purpose: This file contains the raw mathematical implementation of the SHA-256 (Secure Hash Algorithm 256-bit). 
+- How it works: SHA-256 is a one-way mathematical function created by the NSA. It takes any amount of input data (like "Alice sends 5 BTC") and scrambles it through 64 rounds of complex bitwise operations (AND, XOR, bit-shifting). The result is ALWAYS a unique 64-character hexadecimal string. 
+- Role in the app: It creates the unique fingerprints (Hashes) for every block. If a single letter in the input changes, the entire 64-character hash completely changes (The Avalanche Effect).
+
+B. THE CONSENSUS ENGINE
+File: main.cpp
+- Language: C++
+- Purpose: This is the high-performance core that handles the actual blockchain logic.
+- How it works: 
+  1. It defines a "Block" class containing an index, timestamp, data, previous hash, and nonce.
+  2. Proof of Work (PoW) Mechanism: The algorithm goes into a "while" loop, constantly incrementing the "nonce" (a random number) and recalculating the SHA-256 hash until it finds a hash that starts with a specific number of zeros (the "Difficulty"). This brute-forcing simulates high energy usage.
+  3. Proof of Stake (PoS) Mechanism: Instead of guessing numbers, it uses a C++ random number generator to pick a winner from a pool of validators (Alpha, Beta, Gamma). The chance of winning is heavily weighted based on how much "stake" (tokens) a node has.
+  4. Once a block is generated, it outputs JSON formatted ledger data to the standard output terminal.
+
+C. THE BRIDGE / SERVER
+File: server.js
+- Language: JavaScript (Node.js & Express)
+- Purpose: Acts as the middleman between the web browser and the C++ engine.
+- How it works: 
+  1. It hosts the website on port 3000 (or the production environment port).
+  2. On startup, it securely compiles main.cpp using the g++ compiler into a binary executable (sim.exe).
+  3. When a user clicks "Simulate", it receives an HTTP request on the /simulate route via Server-Sent Events (SSE). 
+  4. It spawns the sim.exe process in the background, feeding it the user's custom settings (difficulty, node stakes, custom payloads). As the C++ program prints terminal logs, server.js pipes those logs directly to the web browser in real-time.
+
+D. THE VISUAL DASHBOARD
+File: public/index.html & public/style.css
+- Language: HTML / Vanilla CSS
+- Purpose: Provides the stunning, glowing, dark-mode user interface.
+- How it works: Uses CSS Flexbox and Grid to layout the settings panel, the real-time workflow pipeline diagrams, and the Block Explorer. It relies heavily on CSS variables and keyframe animations for the neon glowing effects (pulse, float) and responsive design.
+
+E. THE INTERACTIVE LOGIC
+File: public/app.js
+- Language: Vanilla JavaScript
+- Purpose: Controls the user interaction, charts, and data parsing on the frontend.
+- How it works:
+  1. Server-Sent Events (SSE): It opens an event stream to the server and listens for incoming C++ terminal logs.
+  2. Log Parsing: It uses Regex (Regular Expressions) to read the C++ logs. Depending on what the log says (e.g., "[Step 3] Brute-forcing"), it dynamically lights up the workflow pipeline UI and plays sound effects (via Web Audio API).
+  3. Chart.js Integration: It extracts the Time (ms) and Energy (Joules) from the logs and plots them onto the bar charts in real-time.
+  4. The Avalanche Effect: It contains a JavaScript clone of the SHA-256 algorithm (using Web Crypto API). If a user types into the Block Explorer's data field, it instantly re-hashes the block on the frontend and turns it red if tampered with.
+
+---------------------------------------------------------
+3. HOW THE APPLICATION WORKS FROM TOP TO BOTTOM
+---------------------------------------------------------
+1. User loads the website and adjusts the sliders/inputs (PoW Difficulty, Stakes, Custom Data).
+2. User clicks "Simulate".
+3. app.js sends these parameters to server.js via a URL query string.
+4. server.js executes the compiled C++ sim.exe binary in the background, passing those exact parameters.
+5. The C++ main.cpp executes the simulation:
+   - It creates the Genesis Block.
+   - It runs the Proof of Work brute-force loop.
+   - It runs the Proof of Stake lottery draw.
+   - It prints every step of the process to the terminal.
+6. server.js catches this terminal text line-by-line and streams it to the browser.
+7. app.js catches the text stream, formats it onto the black terminal screen, updates the progress bars, draws the live Chart.js graphs, and plays audio ticks.
+8. When the simulation ends, C++ spits out the final Blockchain as JSON text.
+9. app.js parses the JSON and renders the Block Explorer cards at the bottom of the page, where the user can finally play with the data to trigger the Avalanche Effect.
