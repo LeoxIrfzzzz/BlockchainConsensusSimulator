@@ -149,6 +149,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    window.handleWasmLog = function(text, isError = false) {
+        appendLog(text, isError);
+    };
+
     function appendLog(text, isError = false) {
         if (text === '[JSON_LEDGER_START]') {
             isParsingLedger = true;
@@ -322,31 +326,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const beta = document.getElementById('beta-stake').value;
         const gamma = document.getElementById('gamma-stake').value;
         const numBlocks = document.getElementById('num-blocks').value;
-        const customData = encodeURIComponent(document.getElementById('custom-data').value);
+        const customData = document.getElementById('custom-data').value;
 
-        const eventSource = new EventSource(`/simulate?diff=${diff}&alpha=${alpha}&beta=${beta}&gamma=${gamma}&numBlocks=${numBlocks}&customData=${customData}`);
+        setTimeout(() => {
+            if (!window.Module || !window.Module.callMain) {
+                appendLog("[SYSTEM] ERROR: WebAssembly engine is still loading. Please wait a second.", true);
+                runBtn.disabled = false;
+                runBtn.querySelector('.btn-text').textContent = 'RE-RUN SIMULATION';
+                return;
+            }
 
-        eventSource.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            
-            if (data.done) {
-                eventSource.close();
+            try {
+                // Execute natively in browser via WASM
+                window.Module.callMain([diff, alpha, beta, gamma, numBlocks, customData]);
+                
                 runBtn.disabled = false;
                 runBtn.querySelector('.btn-text').textContent = 'RE-RUN SIMULATION';
                 powCard.classList.remove('active');
                 posCard.classList.remove('active');
                 appendLog('[SYSTEM] Simulation connection closed.', false);
-            } else {
-                appendLog(data.text, data.error);
+            } catch(e) {
+                console.error('WASM Error:', e);
+                runBtn.disabled = false;
+                runBtn.querySelector('.btn-text').textContent = 'INITIALIZE SIMULATION';
+                appendLog('[SYSTEM] Engine Error: ' + e, true);
             }
-        };
-
-        eventSource.onerror = (error) => {
-            console.error('SSE Error:', error);
-            eventSource.close();
-            runBtn.disabled = false;
-            runBtn.querySelector('.btn-text').textContent = 'INITIALIZE SIMULATION';
-            appendLog('[SYSTEM] Connection lost or server error.', true);
-        };
+        }, 100);
     });
 });
