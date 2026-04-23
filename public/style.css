@@ -695,3 +695,35 @@ header p {
 .block-hash-box.current .hash-val {
     color: #10b981;
 }
+
+/* Base Analytics Grid */
+.analytics-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+/* Mobile Media Queries */
+@media (max-width: 900px) {
+    .analytics-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 500px) {
+    .title-wrapper {
+        flex-direction: column;
+        gap: 5px;
+    }
+    h1 {
+        font-size: 1.8rem;
+    }
+    .action-bar .btn-primary {
+        width: 100%;
+        padding: 16px 20px;
+    }
+    .setting-group {
+        grid-column: span 1 !important;
+    }
+}
